@@ -7,23 +7,30 @@ module Router
     # Make a root directory at path...
     root = File.expand_path(File.dirname(__FILE__))
     root_path = root + "/public" + path
+    
+    # List some common routes...
+    available  = { status: 200, header: {"Content-Type" => "text/html"},  body: File.open("#{root_path}")      }
+    error      = { status: 404, header: {"Content-Type" => "text/html"},  body: File.open("public/404.html")   }
+    index      = { status: 200, header: {"Content-Type" => "text/html"},  body: File.open("public/index.html") }
+    redirect   = { status: 300, header: {"Content-Type" => "text/plain"}, body: ["You tried to access #{root_path} but 
+                                                    it's not here. I wrote this message for you until I figure out how best to redirect you."] }
 
-    # List out some common routes...
-    route_index      = [200, {"Content-Type" => "text/html"}, File.open("public/index.html")]
-    route_404        = [404, {"Content-Type" => "text/html"}, File.open("public/404.html")]
-    route_redirect   = [300, {"Content-Type" => "text/html"}, ["You tried to access #{root_path} but it's not here. I wrote this message for you until I figure out how best to redirect you."]]
-
-    # Sort by the URL path... and return the correct file!
+    # Sort by the URL path...
     if path == "/"
-      route_index
+      route_return(index)
     elsif path == nil
-      route_404
+      route_return(error)
     else
-      available_route  = [200, {"Content-Type" => "text/html"}, File.open("#{root_path}")]
-      File.exist?(root_path) ? available_route : route_redirect
+      File.exist?(root_path) ? route_return(available) : route_return(redirect)
     end
   end
-    
+
+  def route_return(reqs)
+    # ...and return the correct file!
+    reqs.values
+  end
+
+  # unless you're not using GET
   def method_not_allowed(method)
     [405, {}, ["Method not allowed: #{method}"]]
   end
